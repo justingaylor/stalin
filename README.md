@@ -16,8 +16,8 @@ Data sources include:
   - Generic ps
 
 Supported app servers include:
-  - Rainbows
-  - Unicorn
+  - Rainbows (via Rack middleware + SIGQUIT) 
+  - Unicorn (via Rack middleware + SIGQUIT)
 
 (As you can see, we are far short of our _goal_ to support many servers! More to come as needed;
 I'm happy to take your contributions.)
@@ -37,7 +37,7 @@ Add these lines near the top of your `config.ru`
 
     # Max memory size (RSS) per worker
     mb = 1024**2
-    use Stalin::Adapter::Unicorn, (192*mb), (256*mb)
+    use Stalin::Adapter::Rack, (192*mb), (256*mb)
 
 # Tuning
 
