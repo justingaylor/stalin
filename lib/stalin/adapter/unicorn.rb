@@ -2,7 +2,7 @@ module Stalin
   module Adapter
     module Unicorn
       def self.new(app, memory_limit_min = (1024**3), memory_limit_max = (2*(1024**3)), check_cycle = 16, verbose = false)
-        Unicorn::HttpServer.instance_eval do
+        ::Unicorn::HttpServer.instance_eval do
           include ::Stalin::Adapter::Unicorn
           unless instance_methods.include?(:process_client_with_stalin)
             alias_method :process_client_without_stalin, :process_client
