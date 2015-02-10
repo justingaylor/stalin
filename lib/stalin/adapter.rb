@@ -4,4 +4,4 @@ module Stalin
   end
 end
 
-require 'stalin/adapter/unicorn'
+require 'stalin/adapter/rack'
