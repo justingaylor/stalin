@@ -2,9 +2,6 @@ module Stalin
   module Adapter
     module Unicorn
       def self.new(app, memory_limit_min = (1024**3), memory_limit_max = (2*(1024**3)), check_cycle = 16, verbose = false)
-        watcher = Stalin::Watcher.new(Process.pid)
-        killer = Stalin::Killer.new(Process.pid)
-
         raise "blah" unless watcher.watch > 0
 
         ObjectSpace.each_object(::Unicorn::HttpServer) do |s|
@@ -14,8 +11,6 @@ module Stalin
           s.instance_variable_set(:@_worker_check_cycle, check_cycle)
           s.instance_variable_set(:@_worker_check_count, 0)
           s.instance_variable_set(:@_verbose, verbose)
-          s.instance_variable_set(:@_watcher, watcher)
-          s.instance_variable_set(:@_killer, killer)
           File.open('/tmp/tony', 'a') { |f| f.puts "#{Process.pid} EXT #{s.object_id}" }
         end
 
@@ -35,6 +30,8 @@ module Stalin
         @_worker_memory_limit ||= @_worker_memory_limit_min + randomize(@_worker_memory_limit_max - @_worker_memory_limit_min + 1)
         @_worker_check_count += 1
         if @_worker_check_count % @_worker_check_cycle == 0
+          @_watcher ||= Stalin::Watcher.new(Process.pid)
+          @_killer ||= Stalin::Killer.new(Process.pid)
           rss = @_watcher.watch
           File.open('/tmp/tony', 'a') { |f| f.puts "#{Process.pid} RSS=#{rss}" }
           logger.info "#{self}: worker (pid: #{Process.pid}) using #{rss} bytes." if @_verbose
