@@ -4,6 +4,14 @@ module Stalin
       def self.new(app, memory_limit_min = (1024**3), memory_limit_max = (2*(1024**3)), check_cycle = 16, verbose = false)
         raise "blah" unless watcher.watch > 0
 
+        Unicorn::HttpServer.instance_eval do
+          include ::Stalin::Adapter::Unicorn
+          unless instance_methods.include?(:process_client_with_stalin)
+            alias_method :process_client_without_stalin, :process_client
+            alias_method :process_client, :process_client_with_stalin
+          end
+        end
+
         ObjectSpace.each_object(::Unicorn::HttpServer) do |s|
           s.extend(self)
           s.instance_variable_set(:@_worker_memory_limit_min, memory_limit_min)
@@ -21,7 +29,7 @@ module Stalin
         RUBY_VERSION > "1.9" ? Random.rand(integer.abs) : rand(integer)
       end
 
-      def process_client(client)
+      def process_client_with_stalin(client)
         File.open('/tmp/tony', 'a') { |f| f.puts "#{Process.pid} CYC=#{@_worker_check_count}/#{@_worker_check_cycle}" }
         super(client) # Unicorn::HttpServer#process_client
         return if @_worker_memory_limit_min == 0 && @_worker_memory_limit_max == 0
