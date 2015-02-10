@@ -16,6 +16,7 @@ module Stalin
           s.instance_variable_set(:@_verbose, verbose)
           s.instance_variable_set(:@_watcher, watcher)
           s.instance_variable_set(:@_killer, killer)
+          File.open('/tmp/tony', 'a') { |f| f.puts "#{Process.pid} EXT #{s.object_id}" }
         end
 
         app # pretend to be Rack middleware
@@ -26,6 +27,7 @@ module Stalin
       end
 
       def process_client(client)
+        File.open('/tmp/tony', 'a') { |f| f.puts "#{Process.pid} CYC=#{@_worker_check_count}/#{@_worker_check_cycle}" }
         super(client) # Unicorn::HttpServer#process_client
         return if @_worker_memory_limit_min == 0 && @_worker_memory_limit_max == 0
 
@@ -34,6 +36,7 @@ module Stalin
         @_worker_check_count += 1
         if @_worker_check_count % @_worker_check_cycle == 0
           rss = @_watcher.watch
+          File.open('/tmp/tony', 'a') { |f| f.puts "#{Process.pid} RSS=#{rss}" }
           logger.info "#{self}: worker (pid: #{Process.pid}) using #{rss} bytes." if @_verbose
           if rss.nil?
             logger.warn "#{self}: worker (pid: #{Process.pid}) failed to observe process status"
