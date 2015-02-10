@@ -27,7 +27,7 @@ Gem::Specification.new do |s|
     "VERSION",
     "lib/stalin.rb",
     "lib/stalin/adapter.rb",
-    "lib/stalin/adapter/unicorn.rb",
+    "lib/stalin/adapter/rack.rb",
     "lib/stalin/killer.rb",
     "lib/stalin/watcher.rb",
     "lib/stalin/watcher/linux_proc_statm.rb",
