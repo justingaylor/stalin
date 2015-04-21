@@ -10,6 +10,7 @@ module Stalin::Adapter
     # @param [Integer] cycle how frequently to check memory consumption (# requests)
     # @param [Boolean] verbose log extra information
     def initialize(app, min=1024**3, max=2*1024**3, cycle=16, verbose=false)
+      require 'puma/cli'
       cli = nil
       ObjectSpace.each_object(::Puma::CLI) { |o| cli = o }
 
@@ -23,6 +24,8 @@ module Stalin::Adapter
         # itself
         super(app, :USR2, :USR1, min, max, cycle, verbose)
       end
+    rescue LoadError => e
+      raise RuntimeError, "Puma gem is not available; please add 'puma' to your Gemfile or use another Stalin adapter."
     end
   end
 end
